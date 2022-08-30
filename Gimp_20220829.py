@@ -106,7 +106,7 @@ import datetime
 import ccxt 
 
 #업비트 키 로드
-with open("upbit_api.txt") as f:
+with open("upbit_key.txt") as f:
     lines = f.readlines()
     access_key = lines[0].strip()
     secret_key  = lines[1].strip()
@@ -115,7 +115,7 @@ upbit = pyupbit.Upbit(access_key, secret_key)
 
 
 #바이낸스 키 로드
-with open("binance_api.txt") as f:
+with open("binance_key.txt") as f:
     lines = f.readlines()
     api_key = lines[0].strip()
     secret  = lines[1].strip()
