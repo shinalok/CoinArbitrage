@@ -3,7 +3,7 @@ import pyupbit
 class UpbitManager():
     def __init__(self):
         # 업비트 키 로드
-        with open("upbit_key.txt") as f:
+        with open("keys/upbit_key.txt") as f:
             lines = f.readlines()
             access_key = lines[0].strip()
             secret_key = lines[1].strip()
