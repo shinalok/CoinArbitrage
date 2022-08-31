@@ -129,6 +129,6 @@ def entry(ticker, ratio):
 
 if __name__ == '__main__':
     L_holding = ['EOS']
-    #exit(L_holding)
+    exit(L_holding)
 
-    entry(L_holding, 0.05)
+    #entry(L_holding, 0.05)

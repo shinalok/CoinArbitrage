@@ -99,6 +99,6 @@ class VolatilityBreakout():
 
 
 if __name__ == '__main__':
-    #vb = VolatilityBreakout("UPBIT", "KRW", "KRW-XRP")
-    vb = VolatilityBreakout("BINANCE", "USDT", "XRP/USDT")
+    vb = VolatilityBreakout("UPBIT", "KRW", "KRW-XRP")
+    #vb = VolatilityBreakout("BINANCE", "USDT", "XRP/USDT")
     vb.run()

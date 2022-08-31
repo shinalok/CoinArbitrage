@@ -67,7 +67,7 @@ def gimpcheck(ticker_binance, ticker_upbit):
             l_data.append(list(zip(l_now, tickerlist, gimp)))
 
             df = pd.DataFrame(data=list(zip(l_now, tickerlist, gimp)), columns=['date', 'ticker', 'gimp'])
-            print(df)
+            print(df,currency)
 
             time.sleep(0.2)
 

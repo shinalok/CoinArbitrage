@@ -1,4 +1,5 @@
 import pyupbit
+import time
 
 from APIManager import APIManager
 
@@ -48,9 +49,12 @@ class UpbitManager(APIManager):
     def sell_all(self, ticker):
         unit = self.get_balance_amt(ticker)
         response = self.api.sell_market_order(ticker, unit)
-        remain_vol = float(response['remaining_volume'])
-        while(remain_vol > 0):
-            self.api.sell_market_order(ticker, remain_vol)
+        time.sleep(0.2)
+        remain_vol = self.get_balance_amt(ticker)
+        #remain_vol = float(response['remaining_volume'])
+        print(remain_vol)
+        # while (remain_vol > 0):
+        #     self.sell_all()
 
     def buy(self, ticker, unit, price= None):
         if(price == None):
@@ -62,12 +66,18 @@ class UpbitManager(APIManager):
     def buy_all(self, ticker):
         unit = self.get_balances()['KRW']
         response = self.api.buy_market_order(ticker, unit)
+        time.sleep(0.2)
         remain_vol = float(response['remaining_volume'])
         while(remain_vol > 0):
-            self.api.buy_market_order(ticker, remain_vol)
+            response = self.api.buy_market_order(ticker, remain_vol)
+            time.sleep(0.2)
+            remain_vol = float(response['remaining_volume'])
 
 if __name__ == '__main__':
     api = UpbitManager()
+    res = api.sell_all('KRW-XRP')
+    print(res)
+    exit()
     bal = api.get_balances()
     print(bal)
     ohlcv = api.get_ohlcv('KRW-XRP')
