@@ -64,17 +64,20 @@ class UpbitManager(APIManager):
 
     @dispatch(str, float)
     def buy(self, ticker, price):
+        print(ticker, price)
         if(self.count is not None):
             self.count += 1
         return self.api.buy_market_order(ticker, price) #unit: 금액
 
     @dispatch(str, float, float)
     def buy(self, ticker, price, unit):
+        print(ticker,price,unit)
         return self.api.buy_limit_order(ticker, price, unit)
 
-    @dispatch(str, float, int, int)
+    @dispatch(str, float, float, float)
     def buy(self, ticker, price, term, count):
         _div_price = math.floor(price / count)
+        print(_div_price)
         self.count = 0
         sched = BackgroundScheduler()
         sched.start()
@@ -102,10 +105,12 @@ class UpbitManager(APIManager):
 
 if __name__ == '__main__':
     api = UpbitManager()
-    api.buy('KRW-XRP', 100000, 10, 3)
+    #10만원을 10초에한번 10번
+    api.buy('KRW-XRP', 100000.0, 10.0, 10.0)
+
     exit()
-    res = api.sell('KRW-XRP')
-    print(res)
+    #res = api.sell('KRW-XRP')
+    #print(res)
     exit()
     bal = api.get_balances()
     print(bal)
