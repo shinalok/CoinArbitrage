@@ -68,7 +68,7 @@ def exit(ticker):
             c_position = position['positionAmt']
             bicnt = float(c_position)
 
-    if bicnt < 0:
+    if bicnt < 0: #sell order기 때문에 양수로 바꿔줌
         bicnt = float(c_position) * -1
 
     print("바이낸스청산", bi, bicnt)
@@ -85,14 +85,13 @@ def entry(ticker, ratio):
     '''
     업비트는 시장가매수할때 금액으로 해야함.
     바이낸스 숏은 수량으로
-
     '''
 
     bi = ticker_listmapping(ticker, 'binance')[0]
     up = ticker_listmapping(ticker, 'upbit')[0]
 
     krw = get_bal()
-    krw = float(krw) / float(ratio)  # 들어갈 비율을 설정함
+    krw = float(krw) * float(ratio)  # 들어갈 비율을 설정함
 
     beforecnt = upbit.get_balance(ticker=up)
 
@@ -114,4 +113,4 @@ def entry(ticker, ratio):
 if __name__ == '__main__':
     L_holding = ['ETC']
     # exit(L_holding)
-    entry(L_holding, 50)
+    entry(L_holding, 0.05)
