@@ -29,17 +29,9 @@ class APIManager(metaclass=ABCMeta):
         raise NotImplemented
 
     @abstractmethod
-    def sell(self, ticker, unit, price=None):
+    def sell(self):
         raise NotImplemented
 
     @abstractmethod
-    def sell_all(self, ticker):
-        raise NotImplemented
-
-    @abstractmethod
-    def buy(self, ticker, unit, price=None):
-        raise NotImplemented
-
-    @abstractmethod
-    def buy_all(self, ticker):
+    def buy(self):
         raise NotImplemented

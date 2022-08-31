@@ -1,7 +1,11 @@
+import math
 import pyupbit
 import time
 
+from multipledispatch import dispatch
 from APIManager import APIManager
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.jobstores.base import JobLookupError
 
 class UpbitManager(APIManager):
 
@@ -39,31 +43,53 @@ class UpbitManager(APIManager):
     def get_current_price(self, ticker):
         return pyupbit.get_current_price(ticker)
 
-    def sell(self, ticker, unit, price= None):
-        if(price == None):
-            response = self.api.sell_market_order(ticker, unit) #unit: 수량
-        else:
-            response = self.api.sell_limit_order(ticker, price, unit)
-        return response
-
-    def sell_all(self, ticker):
+    @dispatch(str)
+    def sell(self, ticker):
         unit = self.get_balance_amt(ticker)
         response = self.api.sell_market_order(ticker, unit)
+        print(response)
         time.sleep(0.2)
         remain_vol = self.get_balance_amt(ticker)
         #remain_vol = float(response['remaining_volume'])
         print(remain_vol)
-        # while (remain_vol > 0):
-        #     self.sell_all()
 
-    def buy(self, ticker, unit, price= None):
-        if(price == None):
-            response = self.api.buy_market_order(ticker, unit) #unit: 금액
-        else:
-            response = self.api.buy_limit_order(ticker, price, unit)
-        return response
+    @dispatch(str, float)
+    def sell(self, ticker, price):
+        return self.api.sell_market_order(ticker, price)  # unit: 수량
 
+    @dispatch(str, float, float)
+    def sell(self, ticker, price, unit):
+        return self.api.sell_limit_order(ticker, price, unit)
+
+
+    @dispatch(str, float)
+    def buy(self, ticker, price):
+        if(self.count is not None):
+            self.count += 1
+        return self.api.buy_market_order(ticker, price) #unit: 금액
+
+    @dispatch(str, float, float)
+    def buy(self, ticker, price, unit):
+        return self.api.buy_limit_order(ticker, price, unit)
+
+    @dispatch(str, float, int, int)
+    def buy(self, ticker, price, term, count):
+        _div_price = math.floor(price / count)
+        self.count = 0
+        sched = BackgroundScheduler()
+        sched.start()
+        sched.add_job(self.buy, 'interval', seconds=term, id="buy_upbit", args=[ticker, _div_price])
+        while True:
+            print("Running...............")
+            time.sleep(1)
+            if self.count == count:
+                sched.remove_job("buy_upbit")
+                break
+
+    '''
     def buy_all(self, ticker):
+        #사용중지
+        return
         unit = self.get_balances()['KRW']
         response = self.api.buy_market_order(ticker, unit)
         time.sleep(0.2)
@@ -72,10 +98,13 @@ class UpbitManager(APIManager):
             response = self.api.buy_market_order(ticker, remain_vol)
             time.sleep(0.2)
             remain_vol = float(response['remaining_volume'])
+    '''
 
 if __name__ == '__main__':
     api = UpbitManager()
-    res = api.sell_all('KRW-XRP')
+    api.buy('KRW-XRP', 100000, 10, 3)
+    exit()
+    res = api.sell('KRW-XRP')
     print(res)
     exit()
     bal = api.get_balances()
