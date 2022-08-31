@@ -38,10 +38,40 @@ class UpbitManager(APIManager):
     def get_current_price(self, ticker):
         return pyupbit.get_current_price(ticker)
 
+    def sell(self, ticker, unit, price= None):
+        if(price == None):
+            response = self.api.sell_market_order(ticker, unit) #unit: 수량
+        else:
+            response = self.api.sell_limit_order(ticker, price, unit)
+        return response
+
+    def sell_all(self, ticker):
+        unit = self.get_balance_amt(ticker)
+        response = self.api.sell_market_order(ticker, unit)
+        remain_vol = float(response['remaining_volume'])
+        while(remain_vol > 0):
+            self.api.sell_market_order(ticker, remain_vol)
+
+    def buy(self, ticker, unit, price= None):
+        if(price == None):
+            response = self.api.buy_market_order(ticker, unit) #unit: 금액
+        else:
+            response = self.api.buy_limit_order(ticker, price, unit)
+        return response
+
+    def buy_all(self, ticker):
+        unit = self.get_balances()['KRW']
+        response = self.api.buy_market_order(ticker, unit)
+        remain_vol = float(response['remaining_volume'])
+        while(remain_vol > 0):
+            self.api.buy_market_order(ticker, remain_vol)
+
 if __name__ == '__main__':
     api = UpbitManager()
     bal = api.get_balances()
     print(bal)
+    ohlcv = api.get_ohlcv('KRW-XRP')
+    print(ohlcv)
     print(api.get_balance_amt('KRW-XRP'))
     print(api.get_orderbook('KRW-XRP'))
     print(api.get_current_price('KRW-XRP'))

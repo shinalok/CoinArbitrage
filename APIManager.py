@@ -27,3 +27,19 @@ class APIManager(metaclass=ABCMeta):
     @abstractmethod
     def get_current_price(self, ticker):
         raise NotImplemented
+
+    @abstractmethod
+    def sell(self, ticker, unit, price=None):
+        raise NotImplemented
+
+    @abstractmethod
+    def sell_all(self, ticker):
+        raise NotImplemented
+
+    @abstractmethod
+    def buy(self, ticker, unit, price=None):
+        raise NotImplemented
+
+    @abstractmethod
+    def buy_all(self, ticker):
+        raise NotImplemented
