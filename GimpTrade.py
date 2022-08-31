@@ -65,6 +65,9 @@ def exit(ticker):
     balance = binance.fetch_balance()
     positions = balance['info']['positions']
 
+
+    markets = binance.load_markets()
+    market = binance.market(bi)
     for position in positions:
         if position["symbol"] == bi.replace("/", ''):
             c_position = position['positionAmt']
@@ -92,7 +95,7 @@ def entry(ticker, ratio):
     bi = ticker_listmapping(ticker, 'binance')[0]
     up = ticker_listmapping(ticker, 'upbit')[0]
 
-    krw = get_bal()
+    krw = get_bal() #업비트 원화조회
     krw = float(krw) * float(ratio)  # 들어갈 비율을 설정함
 
 
@@ -106,6 +109,17 @@ def entry(ticker, ratio):
 
     print("바이낸스헷징", bi, bicnt)
 
+
+
+    markets = binance.load_markets()
+    market = binance.market(bi)#레버리지율 조절하기 위해 market id load
+
+    leverage = 1 #1배
+
+    resp = binance.fapiPrivate_post_leverage({
+        'symbol': market['id'],
+        'leverage': leverage
+    })
 
     order = binance.create_market_sell_order(
          symbol=bi,
