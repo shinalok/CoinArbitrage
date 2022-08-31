@@ -57,8 +57,10 @@ def exit(ticker):
     up = ticker_listmapping(ticker, 'upbit')[0]
     upcnt = upbit.get_balance(ticker=up)
 
-    # upbit.sell_market_order(up, upcnt)
+    upbit.sell_market_order(up, upcnt)
     print("업비트청산", up, upcnt)
+
+    time.sleep(0.2)
 
     balance = binance.fetch_balance()
     positions = balance['info']['positions']
@@ -68,16 +70,16 @@ def exit(ticker):
             c_position = position['positionAmt']
             bicnt = float(c_position)
 
-    if bicnt < 0:
+    if bicnt < 0: #sell order기 때문에 양수로 바꿔줌
         bicnt = float(c_position) * -1
 
     print("바이낸스청산", bi, bicnt)
 
 
-#     order = binance.create_market_buy_order(
-#          symbol=bi,
-#          amount=bicnt
-#      )
+    order = binance.create_market_buy_order(
+         symbol=bi,
+         amount=bicnt
+     )
 
 
 # 진입
@@ -85,33 +87,34 @@ def entry(ticker, ratio):
     '''
     업비트는 시장가매수할때 금액으로 해야함.
     바이낸스 숏은 수량으로
-
     '''
 
     bi = ticker_listmapping(ticker, 'binance')[0]
     up = ticker_listmapping(ticker, 'upbit')[0]
 
     krw = get_bal()
-    krw = float(krw) / float(ratio)  # 들어갈 비율을 설정함
+    krw = float(krw) * float(ratio)  # 들어갈 비율을 설정함
+
 
     beforecnt = upbit.get_balance(ticker=up)
 
-    # upbit.buy_market_order(up, krw)
+    upbit.buy_market_order(up, krw)
     print("업비트매수", up, krw)
-
+    time.sleep(0.2)
     bicnt = round(upbit.get_balance(ticker=up) - beforecnt, 4)  # 따로 체결완료 수량 조회방법이없어서 전과 후 차이를구해야함
     # print(upbit.get_order("KRW-XRP", state="cancel")[0])에서 state를 cancel로하면 시장가주문도 보임. done은 지정가주문만보임
 
     print("바이낸스헷징", bi, bicnt)
 
 
-#     order = binance.create_market_sell_order(
-#          symbol=bi,
-#          amount=bicnt
-#      )
+    order = binance.create_market_sell_order(
+         symbol=bi,
+         amount=bicnt
+     )
 
 
 if __name__ == '__main__':
-    L_holding = ['ETC']
-    # exit(L_holding)
-    entry(L_holding, 50)
+    L_holding = ['EOS']
+    #exit(L_holding)
+
+    entry(L_holding, 0.05)
