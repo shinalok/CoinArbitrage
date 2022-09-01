@@ -45,28 +45,36 @@ def gimpcheck(ticker_binance, ticker_upbit):
 
             now = datetime.datetime.now()
             l_now = []
-            p_binance = []
-            p_upbit = []
+            p_binance_ask = []
+            p_binance_bid = []
+            p_upbit_ask = []
+            p_upbit_bid = []
 
             currency = upbit_get_usd_krw()
 
             for b_ticker in ticker_binance:
                 binance_price = binance.fetch_ticker(b_ticker)
-                p_binance.append(binance_price['close'])
+                #p_binance.append(binance_price['close'])
+                p_binance_bid.append(binance_price['bid'])#숏을 해야하니까 매수1호가
+                p_binance_ask.append(binance_price['ask'])  # 숏을 해야하니까 매수1호가
 
-            if len(p_binance) > 1:
-                p_upbit = pyupbit.get_current_price(ticker_upbit)
-                p_upbit = list(p_upbit.values())
-                gimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit, p_binance)]
-            else:
-                p_upbit.append(pyupbit.get_current_price(ticker_upbit))
-                gimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit, p_binance)]
+
+
+            for u_ticker in ticker_upbit: #롱은 매도1호가
+                orderbook = pyupbit.get_orderbook(u_ticker)
+                ob = orderbook['orderbook_units'][0]
+                p_upbit_ask.append(ob['ask_price'])
+                p_upbit_bid.append(ob['bid_price'])
+
+            buygimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit_ask, p_binance_bid)]
+            sellgimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit_bid, p_binance_ask)]
+
 
             l_now.append(now)
             l_now = l_now * len(ticker_binance)
-            l_data.append(list(zip(l_now, tickerlist, gimp)))
+            l_data.append(list(zip(l_now, tickerlist, buygimp,sellgimp)))
 
-            df = pd.DataFrame(data=list(zip(l_now, tickerlist, gimp)), columns=['date', 'ticker', 'gimp'])
+            df = pd.DataFrame(data=list(zip(l_now, tickerlist, buygimp,sellgimp)), columns=['date', 'ticker', 'entrygimp','exitgimp'])
             print(df,currency)
 
             time.sleep(0.2)
@@ -77,7 +85,7 @@ def gimpcheck(ticker_binance, ticker_upbit):
 
 
 if __name__ == '__main__':
-    tickerlist = ['ETC', 'XRP', 'EOS']  # 여기에 모니터링할 티커 넣어주면 됨
+    tickerlist = ['ETC']  # 여기에 모니터링할 티커 넣어주면 됨
     bi = ticker_listmapping(tickerlist, 'binance')
     up = ticker_listmapping(tickerlist, 'upbit')
     gimpcheck(bi, up)

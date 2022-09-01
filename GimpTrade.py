@@ -102,6 +102,7 @@ def entry(ticker, ratio):
     beforecnt = upbit.get_balance(ticker=up)
 
     upbit.buy_market_order(up, krw)
+
     print("업비트매수", up, krw)
     time.sleep(0.2)
     bicnt = round(upbit.get_balance(ticker=up) - beforecnt, 4)  # 따로 체결완료 수량 조회방법이없어서 전과 후 차이를구해야함
@@ -129,6 +130,6 @@ def entry(ticker, ratio):
 
 if __name__ == '__main__':
     L_holding = ['EOS']
-    exit(L_holding)
+    #exit(L_holding)
 
-    #entry(L_holding, 0.05)
+    entry(L_holding, 0.1)
