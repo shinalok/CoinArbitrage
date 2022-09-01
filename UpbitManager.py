@@ -46,21 +46,31 @@ class UpbitManager(APIManager):
     @dispatch(str)
     def sell(self, ticker):
         unit = self.get_balance_amt(ticker)
-        response = self.api.sell_market_order(ticker, unit)
-        print(response)
-        time.sleep(0.2)
-        remain_vol = self.get_balance_amt(ticker)
-        #remain_vol = float(response['remaining_volume'])
-        print(remain_vol)
+        return self.api.sell_market_order(ticker, unit)
 
     @dispatch(str, float)
-    def sell(self, ticker, price):
-        return self.api.sell_market_order(ticker, price)  # unit: 수량
+    def sell(self, ticker, unit):
+        return self.api.sell_market_order(ticker, unit)  # unit: 수량
 
     @dispatch(str, float, float)
     def sell(self, ticker, price, unit):
         return self.api.sell_limit_order(ticker, price, unit)
 
+    @dispatch(str, float, int, int)
+    def sell(self, ticker, unit, term, count):
+        _div_unit = (unit / count)
+        print(_div_unit)
+        self.count = 0
+        self.sell(ticker, _div_unit)
+        sched = BackgroundScheduler()
+        sched.start()
+        sched.add_job(self.sell, 'interval', seconds=term, id="sell_upbit", args=[ticker, _div_unit])
+        while True:
+            print("Running...............")
+            time.sleep(1)
+            if self.count == count:
+                sched.remove_job("sell_upbit")
+                break
 
     @dispatch(str, float)
     def buy(self, ticker, price):
@@ -115,6 +125,7 @@ if __name__ == '__main__':
     #res = api.buy('KRW-XRP', 30000.0, 60, 3) #3만원, 1분, 3번 나눠서 매수
     #res = api.sell('KRW-XRP') #해당티커 전부 매도
     #print(res)
+    res = api.sell('KRW-XRP', 60.0, 60, 3) #60개, 1분, 3번 나눠서 매도
     bal = api.get_balances()
     print(bal)
     bal = api.get_balance_amt('KRW-XRP')
