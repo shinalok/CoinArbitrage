@@ -1,14 +1,19 @@
 import ccxt
 import pyupbit
 import requests
-import json
 import time
 import datetime
 import pandas as pd
+from sqlalchemy import create_engine
+
+
+engine = create_engine("mssql+pyodbc://192.168.0.28/coin?driver=SQL+Server", echo=False)
+engine.connect()
+#db안하려면 이거 막으면됨
 
 binance = ccxt.binance()
 upbit = pyupbit.get_tickers()
-# markets = binance.fetch_tickers()
+
 
 l_logtime = []
 l_ticker = []
@@ -69,23 +74,27 @@ def gimpcheck(ticker_binance, ticker_upbit):
             buygimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit_ask, p_binance_bid)]
             sellgimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit_bid, p_binance_ask)]
 
+            tickerlist.append('currency')
+            buygimp.append(currency)
+            sellgimp.append(currency)
+
 
             l_now.append(now)
-            l_now = l_now * len(ticker_binance)
+            l_now =l_now * (len(ticker_binance)+1)
             l_data.append(list(zip(l_now, tickerlist, buygimp,sellgimp)))
 
-            df = pd.DataFrame(data=list(zip(l_now, tickerlist, buygimp,sellgimp)), columns=['date', 'ticker', 'entrygimp','exitgimp'])
-            print(df,currency)
-
+            df = pd.DataFrame(data=list(zip(l_now, tickerlist, buygimp,sellgimp)), columns=['logdate', 'ticker', 'entrygimp','exitgimp'])
+            df.to_sql(name='td_Gimpdaily', con=engine, if_exists='append', index=False)
+            print(df)
             time.sleep(0.2)
 
-        except:
-            print("에러 발생")
+        except Exception as e:
+            print("에러 발생",e)
         time.sleep(1)
 
 
 if __name__ == '__main__':
-    tickerlist = ['ETC']  # 여기에 모니터링할 티커 넣어주면 됨
+    tickerlist = ['BTC','ETC','XLM','EOS','XRP']  # 여기에 모니터링할 티커 넣어주면 됨
     bi = ticker_listmapping(tickerlist, 'binance')
     up = ticker_listmapping(tickerlist, 'upbit')
     gimpcheck(bi, up)
