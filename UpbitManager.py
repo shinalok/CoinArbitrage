@@ -85,12 +85,12 @@ class UpbitManager(APIManager):
     def buy(self, ticker, unit):
         print(ticker, unit)
         hoga = self.get_orderbook(ticker)
-        price = hoga["sell"]["price"]
+        price = hoga["sell"][0]["price"]
         # if(self.count is not None):
         if hasattr(self, 'count'):
             self.count += 1
             print(self.count)
-        return self.api.buy(ticker, price, unit)  # unit: 금액
+        return self.buy(ticker, price, unit)  # unit: 금액
 
     @dispatch(str, float, float)
     def buy(self, ticker, price, unit):
@@ -129,8 +129,8 @@ class UpbitManager(APIManager):
 
 if __name__ == '__main__':
     api = UpbitManager()
-    res = api.buy_target('KRW-XRP', 10000.0) #10000원 매수
-    #res = api.buy('KRW-XRP', 10)  # 시장가 15주 매수
+    #res = api.buy_target('KRW-XLM', 10000.0) #10000원 매수
+    res = api.buy('KRW-XLM', 50.0)  # 시장가 15주 매수
     #res = api.buy('KRW-XRP', 451.0, 15.0) #451원, 15주 매수
     #res = api.sell('KRW-XRP', 450.0, 15.0) #450원, 15주 매도
     #res = api.sell('KRW-XRP', 22.172949) #22.172949주 매도
