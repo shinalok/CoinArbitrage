@@ -35,3 +35,7 @@ class APIManager(metaclass=ABCMeta):
     @abstractmethod
     def buy(self):
         raise NotImplemented
+
+    @abstractmethod
+    def buy_target(self):
+        raise NotImplemented

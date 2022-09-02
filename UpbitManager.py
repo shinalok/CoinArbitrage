@@ -73,13 +73,24 @@ class UpbitManager(APIManager):
                 break
 
     @dispatch(str, float)
-    def buy(self, ticker, price):
+    def buy_target(self, ticker, price):
         print(ticker, price)
         #if(self.count is not None):
         if hasattr(self, 'count'):
             self.count += 1
             print(self.count)
         return self.api.buy_market_order(ticker, price) #unit: 금액
+
+    @dispatch(str, float)
+    def buy(self, ticker, unit):
+        print(ticker, unit)
+        hoga = self.get_orderbook(ticker)
+        price = hoga["sell"]["price"]
+        # if(self.count is not None):
+        if hasattr(self, 'count'):
+            self.count += 1
+            print(self.count)
+        return self.api.buy(ticker, price, unit)  # unit: 금액
 
     @dispatch(str, float, float)
     def buy(self, ticker, price, unit):
@@ -91,10 +102,10 @@ class UpbitManager(APIManager):
         _div_price = (price / count)
         print(_div_price)
         self.count = 0
-        self.buy(ticker, _div_price)
+        self.buy_target(ticker, _div_price)
         sched = BackgroundScheduler()
         sched.start()
-        sched.add_job(self.buy, 'interval', seconds=term, id="buy_upbit", args=[ticker, _div_price])
+        sched.add_job(self.buy_target, 'interval', seconds=term, id="buy_upbit", args=[ticker, _div_price])
         while True:
             print("Running...............")
             time.sleep(1)
@@ -118,14 +129,15 @@ class UpbitManager(APIManager):
 
 if __name__ == '__main__':
     api = UpbitManager()
-    #res = api.buy('KRW-XRP', 10000.0) #10000원 매수
+    res = api.buy_target('KRW-XRP', 10000.0) #10000원 매수
+    #res = api.buy('KRW-XRP', 10)  # 시장가 15주 매수
     #res = api.buy('KRW-XRP', 451.0, 15.0) #451원, 15주 매수
     #res = api.sell('KRW-XRP', 450.0, 15.0) #450원, 15주 매도
     #res = api.sell('KRW-XRP', 22.172949) #22.172949주 매도
     #res = api.buy('KRW-XRP', 30000.0, 60, 3) #3만원, 1분, 3번 나눠서 매수
     #res = api.sell('KRW-XRP') #해당티커 전부 매도
     #print(res)
-    res = api.sell('KRW-XRP', 60.0, 60, 3) #60개, 1분, 3번 나눠서 매도
+    #res = api.sell('KRW-XRP', 60.0, 60, 3) #60개, 1분, 3번 나눠서 매도
     bal = api.get_balances()
     print(bal)
     bal = api.get_balance_amt('KRW-XRP')
