@@ -6,8 +6,12 @@ import datetime
 import pandas as pd
 from sqlalchemy import create_engine
 
+with open("keys/dbconnect.txt") as f:
+    lines = f.readlines()
+    dbengine = lines[0].strip()
 
-engine = create_engine("mssql+pyodbc://192.168.0.28/coin?driver=SQL+Server", echo=False)
+engine = create_engine(dbengine, echo=False)
+
 engine.connect()
 #db안하려면 이거 막으면됨
 
@@ -54,7 +58,7 @@ def gimpcheck(ticker_binance, ticker_upbit):
             p_binance_bid = []
             p_upbit_ask = []
             p_upbit_bid = []
-
+            diff = []
             currency = upbit_get_usd_krw()
 
             for b_ticker in ticker_binance:
@@ -77,14 +81,16 @@ def gimpcheck(ticker_binance, ticker_upbit):
             tickerlist.append('currency')
             buygimp.append(currency)
             sellgimp.append(currency)
+            for i, j in zip(buygimp, sellgimp):
+                diff.append(i - j)
 
 
             l_now.append(now)
             l_now =l_now * (len(ticker_binance)+1)
-            l_data.append(list(zip(l_now, tickerlist, buygimp,sellgimp)))
+            l_data.append(list(zip(l_now, tickerlist, buygimp,sellgimp,diff)))
 
-            df = pd.DataFrame(data=list(zip(l_now, tickerlist, buygimp,sellgimp)), columns=['logdate', 'ticker', 'entrygimp','exitgimp'])
-            df.to_sql(name='td_Gimpdaily', con=engine, if_exists='append', index=False)
+            df = pd.DataFrame(data=list(zip(l_now, tickerlist, buygimp,sellgimp,diff)), columns=['logdate', 'ticker', 'entrygimp','exitgimp','diff'])
+            #df.to_sql(name='td_Gimpdaily', con=engine, if_exists='append', index=False)
             print(df)
             time.sleep(0.2)
 
@@ -94,7 +100,8 @@ def gimpcheck(ticker_binance, ticker_upbit):
 
 
 if __name__ == '__main__':
-    tickerlist = ['BTC','ETC','XLM','EOS','XRP']  # 여기에 모니터링할 티커 넣어주면 됨
+    tickerlist = ['BTC','ETC','ETH','EOS','XRP']  # 여기에 모니터링할 티커 넣어주면 됨
+    #XLM은 갭차이 너무 커서 제외
     bi = ticker_listmapping(tickerlist, 'binance')
     up = ticker_listmapping(tickerlist, 'upbit')
     gimpcheck(bi, up)

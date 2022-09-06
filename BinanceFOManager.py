@@ -45,6 +45,7 @@ class BinanceFOManager(BinanceManager):
         return resp
 
     def get_balance_amt(self, ticker):
+        print("FO: get_balance_amt")
         bal = self.api.fetch_balance()
         positions = bal['info']['positions']
         conv_ticker = ticker.replace("/",'')
@@ -59,6 +60,11 @@ class BinanceFOManager(BinanceManager):
 
     @dispatch(str, float)
     def sell(self, ticker, unit):
+        print(ticker, unit)
+        # if(self.count is not None):
+        if hasattr(self, 'count'):
+            self.count += 1
+            print(self.count)
         self._set_leverage(ticker)
         return self.api.create_market_sell_order(ticker, unit)  # unit: 수량
 
@@ -132,8 +138,17 @@ class BinanceFOManager(BinanceManager):
 
 if __name__ == '__main__':
     api = BinanceFOManager()
+    bal = api.get_balance_amt("XRP/USDT")
+    print(bal)
+    api.sell("XRP/USDT")
+    #api.sell("XRP/USDT", 20.0)
+    #api.sell("XRP/USDT", 100.0, 10, 3)
     print(api.get_current_price("XRP/USDT"))
+    bal = api.get_balance_amt("XRP/USDT")
+    print(bal)
     exit()
+
+
     order = api.get_orderbook("XRP/USDT")
     print(order)
     bal = api.get_balances()
