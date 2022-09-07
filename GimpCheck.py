@@ -5,7 +5,7 @@ import time
 import datetime
 import pandas as pd
 from sqlalchemy import create_engine
-
+'''
 with open("keys/dbconnect.txt") as f:
     lines = f.readlines()
     dbengine = lines[0].strip()
@@ -14,7 +14,7 @@ engine = create_engine(dbengine, echo=False)
 
 engine.connect()
 #db안하려면 이거 막으면됨
-
+'''
 binance = ccxt.binance()
 upbit = pyupbit.get_tickers()
 
@@ -89,7 +89,9 @@ def gimpcheck(ticker_binance, ticker_upbit):
             l_now =l_now * (len(ticker_binance)+1)
             l_data.append(list(zip(l_now, tickerlist, buygimp,sellgimp,diff)))
 
-            df = pd.DataFrame(data=list(zip(l_now, tickerlist, buygimp,sellgimp,diff)), columns=['logdate', 'ticker', 'entrygimp','exitgimp','diff'])
+            #df = pd.DataFrame(data=list(zip(l_now, tickerlist, p_upbit_ask,  p_binance_bid, buygimp,sellgimp,diff)), columns=['logdate', 'ticker', 'ask', 'bid', 'entrygimp','exitgimp','diff'])
+            df = pd.DataFrame(data=list(zip(tickerlist, p_upbit_ask, p_binance_bid, buygimp, sellgimp, diff)),
+                              columns=['ticker', 'ask', 'bid', 'entrygimp', 'exitgimp', 'diff'])
             #df.to_sql(name='td_Gimpdaily', con=engine, if_exists='append', index=False)
             print(df)
             time.sleep(0.2)
@@ -100,7 +102,8 @@ def gimpcheck(ticker_binance, ticker_upbit):
 
 
 if __name__ == '__main__':
-    tickerlist = ['BTC','ETC','ETH','EOS','XRP']  # 여기에 모니터링할 티커 넣어주면 됨
+    #tickerlist = ['BTC','ETC','ETH','EOS','XRP']  # 여기에 모니터링할 티커 넣어주면 됨
+    tickerlist = ['XRP']  # 여기에 모니터링할 티커 넣어주면 됨
     #XLM은 갭차이 너무 커서 제외
     bi = ticker_listmapping(tickerlist, 'binance')
     up = ticker_listmapping(tickerlist, 'upbit')

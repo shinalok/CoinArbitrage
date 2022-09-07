@@ -2,6 +2,7 @@ import math
 import pyupbit
 import time
 
+import requests
 from multipledispatch import dispatch
 from APIManager import APIManager
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -33,7 +34,7 @@ class UpbitManager(APIManager):
     def get_orderbook(self, ticker):
         orderbook = pyupbit.get_orderbook(ticker)
         orderbook_units = orderbook['orderbook_units']
-        print(orderbook_units)
+        #print(orderbook_units)
         sell = []
         buy = []
         for order in orderbook_units:
@@ -42,6 +43,13 @@ class UpbitManager(APIManager):
         return {"sell": sell, "buy": buy}
     def get_current_price(self, ticker):
         return pyupbit.get_current_price(ticker)
+
+    def get_usd_krw(self):
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        url = 'https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'
+        exchange = requests.get(url, headers=headers).json()
+        return exchange[0]['basePrice']
 
     @dispatch(str)
     def sell(self, ticker):
