@@ -48,16 +48,16 @@ class GimpStrategy(threading.Thread):
             self.price_dept.add_pair(self.pair_list, ticker)
         while True:
             with self.condition:
-                self.condition.wait(1)
+                self.condition.wait(0)
             try:
                 now = datetime.datetime.now()
-                #currency = self.price_dept.get_usd_krw()
-                currency = self.price_dept.get_currency()
+                currency = self.price_dept.get_usd_krw()
+                #currency = self.price_dept.get_currency()
 
                 hoga = self.queue.get_nowait()
                 #print(self.queue.qsize())
                 #print(hoga.keys())
-                print(hoga)
+                #print(hoga)
                 buy = []
                 sell = []
                 tickers = []
@@ -76,7 +76,8 @@ class GimpStrategy(threading.Thread):
                 #time.sleep(0.2)
 
             except queue.Empty as ex:
-                print("Queue Empty ", ex)
+                #print("Queue Empty ", ex)
+                pass
             except Exception as ex:
                 print("Exception ", ex)
             except Exception as e:
@@ -84,8 +85,8 @@ class GimpStrategy(threading.Thread):
             #time.sleep(1)
 
 if __name__ == '__main__':
-    #tickerlist = ['BTC', 'ETC', 'ETH', 'EOS', 'XRP']  # 여기에 모니터링할 티커 넣어주면 됨
-    tickerlist = ['ETC']  # 여기에 모니터링할 티커 넣어주면 됨
+    tickerlist = ['BTC', 'ETC', 'ETH', 'EOS', 'XRP']  # 여기에 모니터링할 티커 넣어주면 됨
+    #tickerlist = ['ETC']  # 여기에 모니터링할 티커 넣어주면 됨
     pairlist = [APIS.UPBIT, APIS.BINANCE]
     priceDep = PriceDepartment()
     gimp = GimpStrategy()
