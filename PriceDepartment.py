@@ -1,9 +1,14 @@
+import requests
+
 import APIS
 from PairPriceManager import PairPriceManager
 from PriceManager import *
 import threading
 import queue
 import time
+from bs4 import BeautifulSoup
+import yfinance as yf
+import datetime
 
 class PriceDepartment:
     UPBIT = 1
@@ -58,11 +63,21 @@ class PriceDepartment:
     def get_usd_krw(self):
         return self.upbit.get_usd_krw()
 
+    def get_currency(self):
+        now = datetime.datetime.now().strftime('%Y-%m-%d')
+        data = yf.download(['USDKRW=X'], start=now)
+        return data['Close'][-1]
+
+
 if __name__ == '__main__':
     priceDep = PriceDepartment()
     krw = priceDep.get_usd_krw()
     print("==KRW==")
     print(krw)
+    krw = priceDep.get_currency()
+    print("==KRW==")
+    print(krw)
+    exit()
     #priceDep.add_price(PriceDepartment.UPBIT, "KRW-XRP")
     #priceDep.add_price(PriceDepartment.UPBIT, "KRW-BTC")
     priceDep.add_pair([APIS.UPBIT, APIS.BINANCE], "XRP")
