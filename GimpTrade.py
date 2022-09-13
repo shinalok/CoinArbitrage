@@ -129,7 +129,23 @@ def entry(ticker, ratio):
 
 
 if __name__ == '__main__':
-    L_holding = ['ETH']
-    #it(L_holding)
+    L_holding = ['BTC']
+    entry(L_holding,0.8)
 
-    entry(L_holding, 0.1)
+
+    # if entrygimp[0] < 0.3:
+    #     entry(L_holding, 0.5)  -> bals 입력해줘됨(1, 비중, 김프,달러)
+    # elif entrygimp[0] < 0.1 && 진입 1:
+    #     entry(L_holding, 0.5)   -> bals 입력해줘됨(2, 비중, 김프,달러)
+    #
+    #     #진입 3번까지
+    # if eixitgimp > avg(김프)*1.01: ->이때 시간을체크한다음에
+    #     entry(L_holding, 0.3)
+    # if eixitgimp > avg(김프)*1.015:
+    #     entry(L_holding, 0.3)
+    # if 3시간이 지나면 모두 청산.True
+    #
+
+
+
+
