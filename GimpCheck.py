@@ -5,7 +5,11 @@ import time
 import datetime
 import pandas as pd
 from sqlalchemy import create_engine
-'''
+from bs4 import BeautifulSoup
+import investpy
+latencies = []
+
+
 with open("keys/dbconnect.txt") as f:
     lines = f.readlines()
     dbengine = lines[0].strip()
@@ -14,7 +18,7 @@ engine = create_engine(dbengine, echo=False)
 
 engine.connect()
 #db안하려면 이거 막으면됨
-'''
+
 binance = ccxt.binance()
 upbit = pyupbit.get_tickers()
 
@@ -26,12 +30,21 @@ l_data = []
 
 
 # 환율
-def upbit_get_usd_krw():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-    url = 'https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD'
-    exchange = requests.get(url, headers=headers).json()
-    return exchange[0]['basePrice']
+def get_usd_krw():
+
+    exchange = investpy.currency_crosses.get_currency_cross_recent_data(currency_cross='USD/KRW', as_json=False,
+                                                                     order='ascending', interval='Daily')
+    return exchange['Close'].iloc[-1]
+
+
+def funding_rate_binance(ticker):
+    ticker = ticker.replace("/", '')
+    binance = ccxt.binance({'options': {
+        'defaultType': 'future',
+    }})
+    fund = binance.fetch_funding_rate(symbol=ticker)
+
+    return fund['info']['lastFundingRate']
 
 
 # 티커매핑
@@ -59,15 +72,15 @@ def gimpcheck(ticker_binance, ticker_upbit):
             p_upbit_ask = []
             p_upbit_bid = []
             diff = []
-            currency = upbit_get_usd_krw()
-
+            currency = get_usd_krw()
+            p_binance_fundingfee= []
+            p_binance_fundingfee2=[]
             for b_ticker in ticker_binance:
                 binance_price = binance.fetch_ticker(b_ticker)
                 #p_binance.append(binance_price['close'])
                 p_binance_bid.append(binance_price['bid'])#숏을 해야하니까 매수1호가
                 p_binance_ask.append(binance_price['ask'])  # 숏을 해야하니까 매수1호가
-
-
+                p_binance_fundingfee.append(funding_rate_binance(b_ticker))
 
             for u_ticker in ticker_upbit: #롱은 매도1호가
                 orderbook = pyupbit.get_orderbook(u_ticker)
@@ -75,6 +88,8 @@ def gimpcheck(ticker_binance, ticker_upbit):
                 p_upbit_ask.append(ob['ask_price'])
                 p_upbit_bid.append(ob['bid_price'])
 
+            #print(p_upbit_ask,p_upbit_bid)
+            #print(p_binance_bid,p_binance_bid)
             buygimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit_ask, p_binance_bid)]
             sellgimp = [(x / (y * currency) - 1) * 100 for x, y in zip(p_upbit_bid, p_binance_ask)]
 
@@ -87,11 +102,9 @@ def gimpcheck(ticker_binance, ticker_upbit):
 
             l_now.append(now)
             l_now =l_now * (len(ticker_binance)+1)
-            l_data.append(list(zip(l_now, tickerlist, buygimp,sellgimp,diff)))
+            l_data.append(list(zip(l_now, tickerlist, buygimp,sellgimp,p_binance_fundingfee,diff)))
 
-            #df = pd.DataFrame(data=list(zip(l_now, tickerlist, p_upbit_ask,  p_binance_bid, buygimp,sellgimp,diff)), columns=['logdate', 'ticker', 'ask', 'bid', 'entrygimp','exitgimp','diff'])
-            df = pd.DataFrame(data=list(zip(tickerlist, p_upbit_ask, p_binance_bid, buygimp, sellgimp, diff)),
-                              columns=['ticker', 'ask', 'bid', 'entrygimp', 'exitgimp', 'diff'])
+            df = pd.DataFrame(data=list(zip(l_now, tickerlist, buygimp,sellgimp,p_binance_fundingfee,diff)), columns=['logdate', 'ticker', 'entrygimp','exitgimp','fundingfee','diff'])
             #df.to_sql(name='td_Gimpdaily', con=engine, if_exists='append', index=False)
             print(df)
             time.sleep(0.2)
@@ -102,9 +115,8 @@ def gimpcheck(ticker_binance, ticker_upbit):
 
 
 if __name__ == '__main__':
-    #tickerlist = ['BTC','ETC','ETH','EOS','XRP']  # 여기에 모니터링할 티커 넣어주면 됨
-    tickerlist = ['XRP']  # 여기에 모니터링할 티커 넣어주면 됨
-    #XLM은 갭차이 너무 커서 제외
+    tickerlist = ['ETH','EOS','XRP','ETC','BTC','SOL']  # 여기에 모니터링할 티커 넣어주면 됨
+
     bi = ticker_listmapping(tickerlist, 'binance')
     up = ticker_listmapping(tickerlist, 'upbit')
     gimpcheck(bi, up)
