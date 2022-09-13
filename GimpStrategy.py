@@ -71,7 +71,7 @@ class GimpStrategy(threading.Thread):
 
                 entry = ((sell[0] / (buy[1] * currency)) - 1) * 100
                 exit = ((buy[0] / (sell[1] * currency)) - 1) * 100
-                diff = entry - exit
+                diff = entry - exit#(슬리피지)
                 print("[{}/{}]entry: {} / exit: {} / diff {}".format(now, (tickers[0]+"|"+tickers[1]), entry, exit, diff))
                 #time.sleep(0.2)
 

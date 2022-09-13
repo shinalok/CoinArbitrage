@@ -129,8 +129,8 @@ def entry(ticker, ratio):
 
 
 if __name__ == '__main__':
-    L_holding = ['BTC']
-    entry(L_holding,0.8)
+    L_holding = ['ETC']
+    exit(L_holding)
 
 
     # if entrygimp[0] < 0.3:
