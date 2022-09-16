@@ -129,7 +129,7 @@ def entry(ticker, ratio):
 
 
 if __name__ == '__main__':
-    L_holding = ['ETC']
+    L_holding = ['SOL']
     exit(L_holding)
 
 
